@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML Basic 1.1//EN"
+        "http://www.w3.org/TR/xhtml-basic/xhtml-basic11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<meta charset="UTF-8">
+<title>Thim</title>
+
+<link rel="stylesheet" type="text/css" media="all" 
+          href="../../../css/gtvg.css" th:href="@{/tooltip.css}" />
+<style>
+ .fieldError {
+    background-color: red;
+ }
+ 
+ .errormsg {
+  color: red;
+ }
+ 
+</style>
+
+
+</head>
+<body>
+
+<a th:href="@{/}">[/]</a>
+<h1 th:text="#{welcome.maintitle}">WELCOME</h1>
+
+<form action="#" th:action="@{/addcard}" th:object="${newCardForm}" method="post">
+
+<table>
+	<tr>
+	    <td>
+		    Original: <input type="text" th:field="*{originalText}" size="20" th:errorclass="fieldError"/>
+		    
+		    <div th:if="${#fields.hasErrors('originalText')}" class="tooltip errormsg"> [!]         
+                <span class="tooltiptext" th:errors="*{originalText}">Tooltip text</span>
+            </div>
+            
+		    From: <!-- <input type="text" th:field="*{originalLanguageId}" size="2"/> -->		    
+			<select th:field="*{originalLanguageId}">
+			  <option th:each="type : ${languageIds}" 
+			          th:value="${type}" 
+			          th:text="${type}">Lang</option>
+			</select>
+			
+		    <div th:if="${#fields.hasErrors('originalLanguageId')}" class="tooltip errormsg"> [!]		    
+		      <span class="tooltiptext" th:errors="*{originalLanguageId}">Tooltip text</span>
+		    </div>	    
+	    </td>
+	    
+	    <td>
+		    Translation: <input type="text" th:field="*{translatedText}" size="20" th:errorclass="fieldError"/>
+		    
+		    <div th:if="${#fields.hasErrors('translatedText')}" class="tooltip errormsg"> [!]          
+	          <span class="tooltiptext" th:errors="*{translatedText}">Tooltip text</span>
+	        </div>
+		    
+		    To: <!-- <input type="text" th:field="*{translatedLanguageId}" size="2"/> -->
+		    <select th:field="*{translatedLanguageId}">
+              <option th:each="type : ${languageIds}" 
+                      th:value="${type}" 
+                      th:text="${type}">Lang</option>
+            </select>
+		    <div th:if="${#fields.hasErrors('translatedLanguageId')}" class="tooltip errormsg"> [!]          
+	          <span class="tooltiptext" th:errors="*{translatedLanguageId}">Tooltip text</span>
+	        </div>
+        
+	       <input type="submit" value="Create"/>
+	    </td>
+	</tr>
+	<tr>
+	    <td>
+	    Describe:<br/>
+	     <textarea rows="4" cols="50" th:field="*{originalDescription}" th:errorclass="fieldError"></textarea>
+	    </td>
+	    <td>
+	     Describe:<br/>
+	     <textarea rows="4" cols="50" th:field="*{translatedDescription}" th:errorclass="fieldError"></textarea>
+	    </td>
+	</tr>
+</table>
+
+
+<div th:if="${#fields.hasAnyErrors()}" class="errormsg">
+  FIX ERRORS AND RESUBMIT:
+  <!-- <p th:each="err : ${#fields.allErrors()}" th:text="${err}">...</p> -->
+</div>
+
+</form>
+
+<h2>TRANSLATIONS</h2>
+<table border="1">
+<tr>
+<td th:each="cg : ${cardGroups}">
+  <div style="color:red" th:text="${cg.languageId}"></div>
+  <ol>
+  <li th:each="card: ${cg.cards}" th:text="${card.text}"/>
+  </ol>
+  
+</td>
+</tr>
+</table>
+
+</body>
+</html>

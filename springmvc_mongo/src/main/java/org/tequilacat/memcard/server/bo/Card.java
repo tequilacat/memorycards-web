@@ -1,4 +1,4 @@
-package org.tequilacat.bo;
+package org.tequilacat.memcard.server.bo;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;

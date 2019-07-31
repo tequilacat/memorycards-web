@@ -1,18 +1,17 @@
-package test.services;
+package test.tequilacat.memcard.server.services;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.StringWriter;
-import java.io.Writer;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,15 +23,12 @@ import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.tequilacat.bo.Card;
-import org.tequilacat.bo.ConfigOptions;
-import org.tequilacat.service.CardService;
-import org.tequilacat.utils.StreamUtils;
+import org.tequilacat.memcard.server.bo.Card;
+import org.tequilacat.memcard.server.bo.ConfigOptions;
+import org.tequilacat.memcard.server.service.CardService;
+import org.tequilacat.memcard.server.utils.StreamUtils;
 
-import test.utils.TestDataUtils;
-
-import static org.hamcrest.Matchers.*;
-import static org.hamcrest.MatcherAssert.assertThat; 
+import test.tequilacat.memcard.server.utils.TestDataUtils; 
 
 @DataMongoTest
 @ExtendWith(SpringExtension.class)

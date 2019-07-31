@@ -1,11 +1,11 @@
-package org.tequilacat.config;
+package org.tequilacat.memcard.server.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Component;
-import org.tequilacat.bo.Card;
-import org.tequilacat.service.CardService;
+import org.tequilacat.memcard.server.bo.Card;
+import org.tequilacat.memcard.server.service.CardService;
 
 @Component
 public class DbInitializer implements CommandLineRunner {

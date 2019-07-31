@@ -1,15 +1,11 @@
-package org.tequilacat.service;
+package org.tequilacat.memcard.server.service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
-import org.bson.Document;
 import org.bson.types.ObjectId;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.Id;
@@ -19,15 +15,11 @@ import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
-import org.tequilacat.bo.Card;
-import org.tequilacat.bo.ConfigOptions;
-import org.tequilacat.repository.CardRepository;
-import org.tequilacat.utils.NotImplementedException;
-import org.tequilacat.utils.StreamUtils;
-
-import com.mongodb.DBObject;
-
-import org.slf4j.Logger;
+import org.tequilacat.memcard.server.bo.Card;
+import org.tequilacat.memcard.server.bo.ConfigOptions;
+import org.tequilacat.memcard.server.repository.CardRepository;
+import org.tequilacat.memcard.server.utils.NotImplementedException;
+import org.tequilacat.memcard.server.utils.StreamUtils;
 
 @Service
 public class CardService {

@@ -1,4 +1,4 @@
-package org.tequilacat.bo;
+package org.tequilacat.memcard.server.bo;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 

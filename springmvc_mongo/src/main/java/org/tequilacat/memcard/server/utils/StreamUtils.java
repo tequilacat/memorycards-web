@@ -1,4 +1,4 @@
-package org.tequilacat.utils;
+package org.tequilacat.memcard.server.utils;
 
 import java.util.Collection;
 import java.util.Iterator;

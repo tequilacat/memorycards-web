@@ -1,6 +1,5 @@
-package test.utils;
+package test.tequilacat.memcard.server.utils;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.HashMap;
@@ -12,11 +11,12 @@ import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.tequilacat.bo.Card;
-import org.tequilacat.service.CardService;
+import org.tequilacat.memcard.server.bo.Card;
+import org.tequilacat.memcard.server.service.CardService;
 
 public class TestDataUtils {
 
+  @SuppressWarnings("unused")
   private static final Logger log = LoggerFactory.getLogger(TestDataUtils.class);
   
   public static void generateCards(CardService cardService, String spaceSeparatedWords) {

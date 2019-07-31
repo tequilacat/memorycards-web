@@ -1,4 +1,4 @@
-package org.tequilacat.config;
+package org.tequilacat.memcard.server.config;
 
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;

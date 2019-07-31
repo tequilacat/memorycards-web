@@ -1,4 +1,4 @@
-package org.tequilacat.utils;
+package org.tequilacat.memcard.server.utils;
 
 public class NotImplementedException extends RuntimeException {
   public NotImplementedException() {

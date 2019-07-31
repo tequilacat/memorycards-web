@@ -1,4 +1,4 @@
-package test.services;
+package test.tequilacat.memcard.server.services;
 
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.group;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.newAggregation;
@@ -95,7 +95,7 @@ public class TestBed {
         )), City.class);    
   }
   
-  @Test
+  // @Test
   public void testFillData(@Autowired MongoTemplate mongoTemplate) {
     // var docs = new String[] {"{}"};
     fillCities(mongoTemplate);

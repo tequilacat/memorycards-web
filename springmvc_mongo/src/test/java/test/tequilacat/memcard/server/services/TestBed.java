@@ -17,6 +17,7 @@ import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.aggregation.SortOperation;
 
+@SuppressWarnings("unused")
 public class TestBed {
 
   /*
@@ -118,7 +119,7 @@ public class TestBed {
         .aggregate(aggregation, collName, Document.class);
     
     //Document document= result.getUniqueMappedResult();
-    //var resultList = result; // mongoTemplate.findAll(Document.class, mongoTemplate.getCollectionName(City.class));    
+    //var resultList = result; // mongoTemplate_findAll(Document.class, mongoTemplate.getCollectionName(City.class));    
     StreamSupport.stream(result.spliterator(), false).forEach(c-> System.out.println(c));
   }
   

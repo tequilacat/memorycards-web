@@ -2,16 +2,15 @@ package org.tequilacat.memcard.server.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Component;
-import org.tequilacat.memcard.server.bo.Card;
 import org.tequilacat.memcard.server.service.CardService;
+import org.tequilacat.memcard.server.service.LanguageService;
 
 @Component
 public class DbInitializer implements CommandLineRunner {
 
-  @Autowired private MongoTemplate mongoTemplate;
   @Autowired CardService cardService;
+  @Autowired LanguageService languageService;
   
   @Override
   public void run(String... args) throws Exception {
@@ -19,15 +18,17 @@ public class DbInitializer implements CommandLineRunner {
   }
 
   private void initDb() {
-    // if initial does not exist create default filling
-    if(!mongoTemplate.collectionExists(Card.class)) {
-      var card1 = cardService.createCard("one", "a number", "en");
-      cardService.createTranslation("ein", "1", "de", card1);
-      cardService.createTranslation("une", "descr", "fr", card1);
-      cardService.createTranslation("uno", "descr", "es", card1);
+    if(languageService.getAllLanguages().isEmpty()) {
+      var german = languageService.createLanguage("de", "German", "Deutsch");
+      var english = languageService.createLanguage("en", "English", "English");
+      var french = languageService.createLanguage("fr", "French", "Francaise");
       
-      var card2 = cardService.createCard("two", "2", "en");
-      cardService.createTranslation("zwei", "the 2", "de", card2); 
+      var card1 = cardService.createCard("one", "a number", english);
+      cardService.createTranslation("ein", "1", german, card1);
+      cardService.createTranslation("une", "descr", french, card1);
+      
+      var card2 = cardService.createCard("two", "2", english);
+      cardService.createTranslation("zwei", "the 2", german, card2); 
     }
   }
 }

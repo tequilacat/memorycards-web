@@ -13,6 +13,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
+import org.tequilacat.memcard.server.repository.LanguageRepository;
 import org.tequilacat.memcard.server.service.CardService;
 import org.tequilacat.memcard.server.utils.StreamUtils;
 
@@ -27,6 +28,8 @@ public class HomeController {
   @Autowired
   private CardService cardService;
 
+  @Autowired LanguageRepository languageRepository;
+  
   private ModelAndView createMainPageView() {
     var view = new ModelAndView(MAINPAGE_VIEW);
     var cardsPerLangs = cardService.getCardsPerLang();
@@ -62,10 +65,13 @@ public class HomeController {
       return createMainPageView();
     }
     
+    var srcLang = languageRepository.findByCode(newCardForm.getOriginalLanguageId());
+    var translLang = languageRepository.findByCode(newCardForm.getTranslatedLanguageId());
+    
     var card1 = cardService.createCard(newCardForm.getOriginalText(), 
-        newCardForm.getOriginalDescription(), newCardForm.getOriginalLanguageId());
+        newCardForm.getOriginalDescription(), srcLang);
     cardService.createTranslation(newCardForm.getTranslatedText(), 
-        newCardForm.getTranslatedDescription(), newCardForm.getTranslatedLanguageId(), card1);
+        newCardForm.getTranslatedDescription(), translLang, card1);
 	  
     return new ModelAndView("redirect:/");
 	}

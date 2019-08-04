@@ -6,6 +6,7 @@ import java.util.List;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -16,7 +17,7 @@ import lombok.Data;
 public class Language {
 
   @Id
-  private String id;
+  private ObjectId id;
 
   @NotBlank
   @Size(min = 2, max = 2)

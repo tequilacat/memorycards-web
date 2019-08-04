@@ -34,16 +34,16 @@ public class HomeController {
     var view = new ModelAndView(MAINPAGE_VIEW);
     var cardsPerLangs = cardService.getCardsPerLang();
     view.getModel().put("cardGroups", cardsPerLangs);
-    view.getModel().put("languageIds", StreamUtils.mapToList(cardsPerLangs, c -> c.getLanguageId()));
+    //view.getModel().put("languageIds", StreamUtils.mapToList(cardsPerLangs, c -> c.getLanguageId()));
 
     var newCardForm = new NewCardForm();
 
     if (cardsPerLangs.size() > 0) {
-      newCardForm.setOriginalLanguageId(cardsPerLangs.get(0).getLanguageId());
+      newCardForm.setOriginalLanguageId(cardsPerLangs.get(0).getId());
     }
 
     if (cardsPerLangs.size() > 1) {
-      newCardForm.setTranslatedLanguageId(cardsPerLangs.get(1).getLanguageId());
+      newCardForm.setTranslatedLanguageId(cardsPerLangs.get(1).getId());
     }
 
     view.getModel().put("newCardForm", newCardForm);
@@ -65,13 +65,13 @@ public class HomeController {
       return createMainPageView();
     }
     
-    var srcLang = languageRepository.findByCode(newCardForm.getOriginalLanguageId());
-    var translLang = languageRepository.findByCode(newCardForm.getTranslatedLanguageId());
+//    var srcLang = languageRepository.findByCode(newCardForm.getOriginalLanguageId());
+//    var translLang = languageRepository.findByCode(newCardForm.getTranslatedLanguageId());
     
     var card1 = cardService.createCard(newCardForm.getOriginalText(), 
-        newCardForm.getOriginalDescription(), srcLang);
+        newCardForm.getOriginalDescription(), newCardForm.getOriginalLanguageId());
     cardService.createTranslation(newCardForm.getTranslatedText(), 
-        newCardForm.getTranslatedDescription(), translLang, card1);
+        newCardForm.getTranslatedDescription(), newCardForm.getTranslatedLanguageId(), card1.getCardId());
 	  
     return new ModelAndView("redirect:/");
 	}

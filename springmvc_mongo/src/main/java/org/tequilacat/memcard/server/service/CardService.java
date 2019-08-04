@@ -36,54 +36,55 @@ public class CardService {
   }
 
   
-  public Card createCard(String text, String description, Language language) {
-    return createCardInternal(text, description, language, null);
+  public Card createCard(String text, String description, ObjectId languageId) {
+    return createCardInternal(text, description, languageId, null);
   }
   
-  public Card createTranslation(String text, String description, Language language, Card sourceCard) {
-    return createCardInternal(text, description, language, sourceCard);
+  public Card createTranslation(String text, String description, ObjectId languageId, ObjectId sourceCardId) {
+    return createCardInternal(text, description, languageId, sourceCardId);
   }
   
-  private Card createCardInternal(String text, String description, Language language, Card sourceCard) {
+  private Card createCardInternal(String text, String description, ObjectId languageId, ObjectId sourceCardId) {
     final Language sourceLanguage;
     
-    if(sourceCard == null) {
-      log.debug("Create new card {} [{}]", text, language.getCode());      
+    if(sourceCardId == null) {
+      log.debug("Create new card {} [{}]", text, languageId);      
       sourceLanguage = null;
     } else {
-      var found = languageRepository.getByCardsCardId(sourceCard.getCardId());
-      if(found.size() == 0) {
-        throw new IllegalArgumentException("No card found for card ID '" + sourceCard.getCardId() + "'");
+      sourceLanguage = languageService.getCardInLanguage(sourceCardId);
+      
+      if (sourceLanguage == null) {
+        throw new IllegalArgumentException("No card found for card ID '" + sourceCardId + "'");
       }
       
-      sourceLanguage = found.get(0);
-      
-      if(sourceLanguage.getId().contentEquals(language.getId())) {
+      if(sourceLanguage.getId().equals(languageId)) {
         throw new IllegalArgumentException("Same language ID for linked translations: '" + sourceLanguage.getCode() + "'");
       }
       
-      log.debug("Add translation {} [{}] of card {} [{}]", text, language.getCode(), sourceCard.getText(), sourceLanguage.getCode());
+      log.debug("Add translation {} [{}] of card {} [{}]", text, languageId, 
+          sourceLanguage.getCards().get(0).getText(), sourceLanguage.getCode());
     }
     
     var card = new Card();
     card.setText(text);
-    card.setWordIdentity(sourceCard == null ? new ObjectId() : sourceCard.getWordIdentity());
+    card.setWordIdentity(sourceLanguage == null ? new ObjectId() : sourceLanguage.getCards().get(0).getWordIdentity());
     card.setDescription(description);
     card.setCardId(new ObjectId());
     
-    if (sourceCard != null) {
+    if (sourceLanguage != null) {
       Update update = new Update();
-      update.set("lastSourceLanguage", sourceLanguage.getCode());
-      update.set("lastTranslationLanguage", language.getCode());
+      update.set("lastSourceLanguage", sourceLanguage.getId());
+      update.set("lastTranslationLanguage", languageId);
       mongoTemplate.upsert(new Query(), update, ConfigOptions.class);
     }
     
-    language.getCards().add(card);  
-    languageRepository.save(language);
+    var update = new Update().addToSet("cards", card);
+    mongoTemplate.updateFirst(new Query().addCriteria(Criteria.where("_id").is(languageId)),
+        update, Language.class);
     return card;
   }
   
-  public void removeCard(String cardId) {
+  public void removeCard(ObjectId cardId) {
     var langAndCard = languageService.getCardInLanguage(cardId);
     
     if (langAndCard == null) {
@@ -92,40 +93,41 @@ public class CardService {
     
     mongoTemplate.updateMulti(new Query(),
         new Update().pull("cards", 
-            Query.query(Criteria.where("cardId").is(new ObjectId(cardId)))), 
+            Query.query(Criteria.where("cardId").is(cardId))), 
         Language.class);
   }
   
-  public static class CardLanguage {
-    private Language language;
-    
-    public CardLanguage(Language language) {
-      this.language = language; 
-    }
-    
-    public String getLanguageId() {
-      return language.getCode();
-    }
-
-    public List<Card> getCards() {
-      return language.getCards();
-    }
-  }
+//  public static class CardLanguage {
+//    private Language language;
+//    
+//    public CardLanguage(Language language) {
+//      this.language = language; 
+//    }
+//    
+//    public String getLanguageId() {
+//      return language.getCode();
+//    }
+//
+//    public List<Card> getCards() {
+//      return language.getCards();
+//    }
+//  }
   
-  public List<CardLanguage> getCardsPerLang() {
-    List<CardLanguage> languageCards = new ArrayList<>();
+  public List<Language> getCardsPerLang() {
+    List<Language> languageCards = new ArrayList<>();
 
     // TODO consider smaller data amount to be requested and projected, not findAll 
 
-    languageRepository.findAll().forEach(l -> languageCards.add(new CardLanguage(l)));
+    languageCards.addAll(languageRepository.findAll());
+    //languageRepository.findAll().forEach(l -> languageCards.add(new CardLanguage(l)));
     
     var config = mongoTemplate.findOne(new Query(), ConfigOptions.class);
     
     if (config != null && config.getLastSourceLanguage() != null && config.getLastTranslationLanguage() != null) {
       var lastSourceGrp = StreamUtils.findFirst(languageCards,
-          lc -> Objects.equals(lc.getLanguageId(), config.getLastSourceLanguage()));
+          lc -> Objects.equals(lc.getId(), config.getLastSourceLanguage()));
       var lastTranslationGroup = StreamUtils.findFirst(languageCards,
-          lc -> Objects.equals(lc.getLanguageId(), config.getLastTranslationLanguage()));
+          lc -> Objects.equals(lc.getId(), config.getLastTranslationLanguage()));
       
       if (lastSourceGrp!= null && lastTranslationGroup != null
           && !lastSourceGrp.equals(lastTranslationGroup)) {

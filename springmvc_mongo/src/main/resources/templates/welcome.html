@@ -38,11 +38,11 @@
                 <span class="tooltiptext" th:errors="*{originalText}">Tooltip text</span>
             </div>
             
-		    From: <!-- <input type="text" th:field="*{originalLanguageId}" size="2"/> -->		    
+		    From:		    
 			<select th:field="*{originalLanguageId}">
-			  <option th:each="type : ${languageIds}" 
-			          th:value="${type}" 
-			          th:text="${type}">Lang</option>
+			  <option th:each="type : ${cardGroups}" 
+			          th:value="${type.id}" 
+			          th:text="${type.ownName}">Lang</option>
 			</select>
 			
 		    <div th:if="${#fields.hasErrors('originalLanguageId')}" class="tooltip errormsg"> [!]		    
@@ -57,12 +57,13 @@
 	          <span class="tooltiptext" th:errors="*{translatedText}">Tooltip text</span>
 	        </div>
 		    
-		    To: <!-- <input type="text" th:field="*{translatedLanguageId}" size="2"/> -->
+		    To:
 		    <select th:field="*{translatedLanguageId}">
-              <option th:each="type : ${languageIds}" 
-                      th:value="${type}" 
-                      th:text="${type}">Lang</option>
+              <option th:each="type : ${cardGroups}" 
+                      th:value="${type.id}" 
+                      th:text="${type.ownName}">Lang</option>
             </select>
+            
 		    <div th:if="${#fields.hasErrors('translatedLanguageId')}" class="tooltip errormsg"> [!]          
 	          <span class="tooltiptext" th:errors="*{translatedLanguageId}">Tooltip text</span>
 	        </div>
@@ -94,7 +95,7 @@
 <table border="1">
 <tr>
 <td th:each="cg : ${cardGroups}">
-  <div style="color:red" th:text="${cg.languageId}"></div>
+  <div style="color:red" th:text="${cg.code}"></div>
   <ol>
   <li th:each="card: ${cg.cards}" th:text="${card.text}"/>
   </ol>

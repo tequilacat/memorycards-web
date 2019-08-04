@@ -32,9 +32,9 @@ public class LanguageService {
     return mongoTemplate.getCollection(mongoTemplate.getCollectionName(Language.class));
   }
   
-  public Language find(String code) {
-    return languageRepository.findByCode(code);
-  }
+//  public Language find(String code) {
+//    return languageRepository.findByCode(code);
+//  }
   
   public List<Language> getAllLanguages() {
     return languageRepository.findAll();
@@ -60,12 +60,12 @@ public class LanguageService {
     };    
   }
   
-  public Language getCardInLanguage(String cardId) {
+  public Language getCardInLanguage(ObjectId cardId) {
     // db.language.aggregate({ "$match" : { "cards.cardId" : ObjectId( "5d46232a9f72b22a7c934b8a" ) }} ,
     //      { "$unwind" : "$cards"}, { "$match" : { "cards.cardId" : ObjectId( "5d46232a9f72b22a7c934b8a" ) }}, 
     //      { $addFields: { cards: { $concatArrays: [ ["$cards"]] } } } ).pretty()
     
-    var match = Aggregation.match(Criteria.where("cards.cardId").is(new ObjectId(cardId)));
+    var match = Aggregation.match(Criteria.where("cards.cardId").is(cardId));
     var unwind = Aggregation.unwind("cards");
     var aggregation = Aggregation.newAggregation(match, unwind, match, reunwindOp);    
     var foundLangs = StreamSupport.stream(

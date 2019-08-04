@@ -1,5 +1,6 @@
 package org.tequilacat.memcard.server.bo;
 
+import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.Data;
@@ -8,6 +9,6 @@ import lombok.Data;
 @Data
 public class ConfigOptions {
 
-  private String lastSourceLanguage;
-  private String lastTranslationLanguage;
+  private ObjectId lastSourceLanguage;
+  private ObjectId lastTranslationLanguage;
 }

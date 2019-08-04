@@ -2,7 +2,6 @@ package test.tequilacat.memcard.server.utils;
 
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -73,14 +72,15 @@ public class TestDataUtils {
       }else {
         language = langService.createLanguage(langId, langId, langId);
         languages.put(langId, language);
+        
       }
             
       final Card newCard;
       
       if (firstCardsForWord.containsKey(wordId)) {
-        newCard = cardService.createTranslation(wordText, "", language, firstCardsForWord.get(wordId));
+        newCard = cardService.createTranslation(wordText, "", language.getId(), firstCardsForWord.get(wordId).getCardId());
       } else {
-        newCard = cardService.createCard(wordText, "", language);
+        newCard = cardService.createCard(wordText, "", language.getId());
         firstCardsForWord.put(wordId, newCard);
       }
       

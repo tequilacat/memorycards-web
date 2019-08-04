@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.*;
+//import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -75,17 +75,17 @@ public class TestLanguageService {
     assertEquals("German", findFirst(allLangs, l->l.getCode().equals("de")).getGenericName());    
   }
   
-  @Test  
-  public void test_find(@Autowired MongoTemplate mongoTemplate) {
-    var l = new Language();
-    l.setCode("de");
-    l.setGenericName("German");
-    var inserted = mongoTemplate.insert(l);
-    
-    var found = languageService.find("de");
-    assertNotNull(found.getId());
-    assertEquals(inserted.getId(), found.getId());
-  } 
+//  @Test  
+//  public void test_find(@Autowired MongoTemplate mongoTemplate) {
+//    var l = new Language();
+//    l.setCode("de");
+//    l.setGenericName("German");
+//    var inserted = mongoTemplate.insert(l);
+//    
+//    var found = languageService.find("de");
+//    assertNotNull(found.getId());
+//    assertEquals(inserted.getId(), found.getId());
+//  } 
   
   @Test
   public void test_createLanguage(@Autowired MongoTemplate mongoTemplate) {

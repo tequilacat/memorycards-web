@@ -54,38 +54,64 @@ public class TestCardService {
   public void test_createCard(@Autowired MongoTemplate mongoTemplate) {
     var en = languageService.createLanguage("en", "English", "English");
     
-    cardService.createCard("one", "a number", en);
+    {
+      cardService.createCard("one", "a number", en.getId());
+      
+      var allLangs = mongoTemplate.findAll(Language.class);
+      
+      // get from languages - imply it works 
+      assertThat(allLangs, hasSize(1));
+      var allEnCards = findFirst(allLangs, l->l.getCode().equals("en")).getCards();
+      var primary = allEnCards.stream().filter(s -> s.getText().equals("one")).findFirst().get();
+      assertEquals("a number", primary.getDescription());
+      assertNotNull(primary.getWordIdentity());
+    }
     
+    {
+      // another
+      cardService.createCard("two", "a number", en.getId());
+      
+      var allLangs = mongoTemplate.findAll(Language.class);
+      assertThat(allLangs, hasSize(1));
+      assertThat(StreamUtils.mapToList(findFirst(allLangs, l -> l.getCode().equals("en")).getCards(),
+          c -> c.getText()), containsInAnyOrder("one", "two"));
+    }
     
-    // get from languages - imply it works 
-    var allCards = languageService.find("en").getCards();
-    var primary = allCards.stream().filter(s -> s.getText().equals("one")).findFirst().get();
-    //assertEquals(newCard.getId(), primary.getId());
-    //assertEquals("en", primary.getLanguageId());
-    assertEquals("a number", primary.getDescription());
-    assertNotNull(primary.getWordIdentity());
+    {
+      var fr = languageService.createLanguage("fr", "fr", "fr");
+      // another
+      cardService.createCard("du", "a number", fr.getId());
+      
+      var allLangs = mongoTemplate.findAll(Language.class);
+      assertThat(StreamUtils.mapToList(allLangs, c -> c.getCode()), containsInAnyOrder("fr", "en"));
+      
+      assertThat(StreamUtils.mapToList(findFirst(allLangs, l -> l.getCode().equals("en")).getCards(),
+          c -> c.getText()), containsInAnyOrder("one", "two"));
+      assertThat(StreamUtils.mapToList(findFirst(allLangs, l -> l.getCode().equals("fr")).getCards(),
+          c -> c.getText()), containsInAnyOrder("du"));
+    }
   }
 
   @Test 
   public void test_createTranslation_samelanguage() {
     var en = languageService.createLanguage("en", "English", "English");
 
-    var card1 = cardService.createCard("one", "a number", en);
+    var card1 = cardService.createCard("one", "a number", en.getId());
     var ex = assertThrows(IllegalArgumentException.class,
-        () -> cardService.createTranslation("one1", "a number", en, card1));
+        () -> cardService.createTranslation("one1", "a number", en.getId(), card1.getCardId()));
     assertTrue(ex.getMessage().contains("Same"));
   }
 
   @Test 
   public void test_createTranslation_badId() {
-    var en = languageService.createLanguage("en", "English", "English");
+    var en = languageService.createLanguage("en", "English", "English").getId();
     var card1 = cardService.createCard("one", "a number", en);
     var fake = new Card();
     fake.setText("nosuch");
     fake.setWordIdentity(new ObjectId()); // new id wihch does not exist
     
     var ex = assertThrows(IllegalArgumentException.class,
-        () -> cardService.createTranslation("one1", "a number", en, card1));
+        () -> cardService.createTranslation("one1", "a number", en, card1.getCardId()));
     assertTrue(ex.getMessage().contains("Same"));
   }
 
@@ -94,12 +120,13 @@ public class TestCardService {
     var en = languageService.createLanguage("en", "English", "English");
     var fr = languageService.createLanguage("fr", "French", "Francaise");
     
-    var newEnCard = cardService.createCard("one", "a number", en);
+    var newEnCard = cardService.createCard("one", "a number", en.getId());
     
-    cardService.createTranslation("une", "une numero", fr, newEnCard);
+    cardService.createTranslation("une", "une numero", fr.getId(), newEnCard.getCardId());
     
-    var foundEnCard = languageService.find("en").getCards().stream().filter(s -> s.getText().equals("one")).findFirst().get();
-    var foundFrCard = languageService.find("fr").getCards().stream().filter(s -> s.getText().equals("une")).findFirst().get();
+    var langs = toMap(languageService.getAllLanguages(), l -> l.getCode(), l -> l);
+    var foundEnCard = langs.get("en").getCards().stream().filter(s -> s.getText().equals("one")).findFirst().get();
+    var foundFrCard = langs.get("fr").getCards().stream().filter(s -> s.getText().equals("une")).findFirst().get();
     
     assertEquals("une numero", foundFrCard.getDescription());
     assertEquals(newEnCard.getWordIdentity(), foundFrCard.getWordIdentity());
@@ -115,10 +142,10 @@ public class TestCardService {
     var b2 = findFirst(srcLangB.getCards(), c->c.getText().equals("b2"));
 
     // no such card in DB
-    assertNull(languageService.getCardInLanguage(new ObjectId().toHexString()));    
+    assertNull(languageService.getCardInLanguage(new ObjectId()));    
     
     // check we found single language with single card
-    var foundCardLang = languageService.getCardInLanguage(b2.getCardId().toHexString());
+    var foundCardLang = languageService.getCardInLanguage(b2.getCardId());
     assertEquals(srcLangB.getId(), foundCardLang.getId());    
     assertThat(foundCardLang.getCards(), hasSize(1));    
     assertEquals(b2.getCardId(), foundCardLang.getCards().get(0).getCardId());
@@ -129,9 +156,9 @@ public class TestCardService {
     TestDataUtils.generateCards(cardService, languageService, 
         "a1 a2 a3 b1 b2 b3 c1 c2 c3");
     
-    var b1card = findFirst(findFirst(cardService.getCardsPerLang(), l->l.getLanguageId().equals("b")).getCards(),
+    var b1card = findFirst(findFirst(cardService.getCardsPerLang(), l->l.getCode().equals("b")).getCards(),
       c->c.getText().contentEquals("b1"));
-    cardService.removeCard(b1card.getCardId().toHexString());
+    cardService.removeCard(b1card.getCardId());
     
     // check we don't have b1 anymore    
     assertThat(languageService.getAllLanguages().stream().flatMap(l -> l.getCards().stream())
@@ -140,7 +167,7 @@ public class TestCardService {
     
     // remove twice - does not exist
     assertThrows(IllegalArgumentException.class,
-        () -> cardService.removeCard(b1card.getCardId().toHexString()));   
+        () -> cardService.removeCard(b1card.getCardId()));   
   }
   
   @Test
@@ -150,34 +177,34 @@ public class TestCardService {
     var es = languageService.createLanguage("es", "es", "es");
     var de = languageService.createLanguage("de", "de", "de");
     
-    var card1 = cardService.createCard("one", "a number", en);
-    cardService.createTranslation("ein", "1", de, card1);
-    cardService.createTranslation("une", "descr", fr, card1);
-    cardService.createTranslation("uno", "descr", es, card1);
+    var card1 = cardService.createCard("one", "a number", en.getId());
+    cardService.createTranslation("ein", "1", de.getId(), card1.getCardId());
+    cardService.createTranslation("une", "descr", fr.getId(), card1.getCardId());
+    cardService.createTranslation("uno", "descr", es.getId(), card1.getCardId());
     
-    var card2 = cardService.createCard("two", "2", en);
-    cardService.createTranslation("zwei", "the 2", de, card2); 
+    var card2 = cardService.createCard("two", "2", en.getId());
+    cardService.createTranslation("zwei", "the 2", de.getId(), card2.getCardId()); 
     
     var list = cardService.getCardsPerLang();
-    assertThat(StreamUtils.mapToList(list, l->l.getLanguageId()), 
+    assertThat(StreamUtils.mapToList(list, l->l.getCode()), 
         containsInAnyOrder("en", "de", "es", "fr"));
     
     // en has 2 
     
     assertThat(StreamUtils.mapToList(
-        StreamUtils.findFirst(list, l->l.getLanguageId().equals("en")).getCards(), 
+        StreamUtils.findFirst(list, l->l.getCode().equals("en")).getCards(), 
         c->c.getText()), containsInAnyOrder("one", "two"));
     
     assertThat(StreamUtils.mapToList(
-        StreamUtils.findFirst(list, l->l.getLanguageId().equals("de")).getCards(), 
+        StreamUtils.findFirst(list, l->l.getCode().equals("de")).getCards(), 
         c->c.getText()), containsInAnyOrder("ein", "zwei"));
     
     assertThat(StreamUtils.mapToList(
-        StreamUtils.findFirst(list, l->l.getLanguageId().equals("fr")).getCards(), 
+        StreamUtils.findFirst(list, l->l.getCode().equals("fr")).getCards(), 
         c->c.getText()), containsInAnyOrder("une"));
     
     assertThat(StreamUtils.mapToList(
-        StreamUtils.findFirst(list, l->l.getLanguageId().equals("es")).getCards(), 
+        StreamUtils.findFirst(list, l->l.getCode().equals("es")).getCards(), 
         c->c.getText()), containsInAnyOrder("uno"));
   }
   
@@ -185,31 +212,31 @@ public class TestCardService {
   public void test_storeLastTranslationLanguages(@Autowired MongoTemplate mongoTemplate) {
     // TestDataUtils.generateCards(cardService, languageService, "en.w1 fr.w1");
     var langs = TestDataUtils.createLanguageMap(languageService, "en fr es de");
-    var e1 = cardService.createCard("e1", "", langs.get("en"));
+    var e1 = cardService.createCard("e1", "", langs.get("en").getId());
     // add first card does not add anything 
     assertThat(mongoTemplate.findAll(ConfigOptions.class), hasSize(0));
     
     // add another non-linked card does not add config options
-    cardService.createCard("f2", "", langs.get("fr"));
+    cardService.createCard("f2", "", langs.get("fr").getId());
     assertThat(mongoTemplate.findAll(ConfigOptions.class), hasSize(0));
     
     // add translation - remember the language pair
-    var f1 = cardService.createTranslation("f1", "", langs.get("fr"), e1);
+    var f1 = cardService.createTranslation("f1", "", langs.get("fr").getId(), e1.getCardId());
 
     var configs = mongoTemplate.findAll(ConfigOptions.class);
     assertThat(configs, hasSize(1));
-    assertEquals("en", configs.get(0).getLastSourceLanguage());
-    assertEquals("fr", configs.get(0).getLastTranslationLanguage());
+    assertEquals(langs.get("en").getId(), configs.get(0).getLastSourceLanguage());
+    assertEquals(langs.get("fr").getId(), configs.get(0).getLastTranslationLanguage());
     
     // test query that correctly finds language of provided source card:
     // add translation from word that was already a translation (not first in result)
     // must store fr->de
-    cardService.createTranslation("de1", "", langs.get("de"), f1);
+    cardService.createTranslation("de1", "", langs.get("de").getId(), f1.getCardId());
     
     configs = mongoTemplate.findAll(ConfigOptions.class);
     assertThat(configs, hasSize(1));
-    assertEquals("fr", configs.get(0).getLastSourceLanguage());
-    assertEquals("de", configs.get(0).getLastTranslationLanguage());
+    assertEquals(langs.get("fr").getId(), configs.get(0).getLastSourceLanguage());
+    assertEquals(langs.get("de").getId(), configs.get(0).getLastTranslationLanguage());
   }
   
   //@Test
@@ -220,14 +247,14 @@ public class TestCardService {
   }
   
   @Test
-  public void cardsReturnedInCreationOrder(@Autowired MongoTemplate mongoTemplate) {
+  public void test_getCardsPerLang_cardsReturnedInCreationOrder(@Autowired MongoTemplate mongoTemplate) {
     
     TestDataUtils.generateCards(cardService, languageService, "a1 a2 a3 b2 b3 b1 c3 c1 c2 f1");
     
     // last added word is c3, means first is a3, should be  a c b
     var cardsPerLang = cardService.getCardsPerLang();
 
-    assertThat(mapToList(findFirst(cardsPerLang, cl -> "a".equals(cl.getLanguageId())).getCards(), c -> c.getText()),
+    assertThat(mapToList(findFirst(cardsPerLang, cl -> "a".equals(cl.getCode())).getCards(), c -> c.getText()),
         contains("a3", "a2", "a1"));    
   }
 }
